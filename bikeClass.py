@@ -37,6 +37,9 @@ class Bike:
         self.gpioPin_wheelspeed = 17
         self.gpioPin_rpm = 27
         self.gpioPin_engineTemp = 17
+        self.gpioPin_ignitionA = 16 #TODO build circuit for ignition control
+        self.gpioPin_ignitionA = 20
+
 
         """_args enables sensor type, off by default"""
         # influx config
@@ -56,6 +59,7 @@ class Bike:
         self.rpm = 0
         self.engineTemp = 0  # F
         self.airTemp = 0  # F
+        self.ignitionMap = 1
         self.rpm_elapse = (
             time.monotonic()
         )  # time value for calculating duration between signals
@@ -182,6 +186,9 @@ class Bike:
             # except:
             #     print('influx error')
             time.sleep(0.016)
+    def ignitionMapUpdate(self,ignitionMap):
+        self.ignitionMap = ignitionMap
+        #TODO define logic for driving circuit
 
     def messageRefresh(self):
         # TODO

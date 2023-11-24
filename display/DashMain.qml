@@ -12,6 +12,8 @@ import QtQuick.Controls.Universal 2.0
 //[]top speed visual
 //[]gear pos animation
 //[]error message system with signal integration
+//[]low fuel visual alarm
+//[]
 
 Window {
     id: root
@@ -81,6 +83,7 @@ Window {
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
+    //TODO update sensor dict
     //    Timer {
     //        interval: 16
     //        running: true
@@ -89,14 +92,18 @@ Window {
     //            var sensorDict = con.sensorRefresh()
     //            root.rpm = parseInt(sensorDict['rpm'])
     //            speed.text = parseInt(sensorDict['speed'])
+                  // speed, rpm, air temp, gear
+
     //        }
     //    }
+    //TODO raceData dictionary retrevial
     Timer {
         interval: 500
         running: true
         repeat: true
         onTriggered: {
             sessionTimer.boxValueText=con.sessionTime()
+
         }
 
     }
@@ -162,6 +169,7 @@ Window {
                     anchors.horizontalCenter: parent.horizontalCenter
                     onPressed: {
                         (root.ignitionMapSetting<4)? root.ignitionMapSetting +=1 : root.ignitionMapSetting = 1
+                        con.ignitionMapUpdate(root.ignitionMapSetting)
                     }
                 }
             }
@@ -255,10 +263,18 @@ Window {
                 anchors.rightMargin: 10
                 anchors.topMargin: 15
                 labelText: "Session Timer"
-                rectangleColor: "#00ffffff"
                 boxValueColor: root.fontColor
                 boxValueText: "29:54"
                 boxValueFontfamily: "Arial"
+                PropertyAnimation
+                {
+                    id: sessionTimerResetFlash
+                    running: false
+                    target: sessionTimer
+                    property: "rectangleColor";
+                    to: "yellow";
+                    duration: 150
+                }
 
                 MouseArea {
                     id: mouseArea1
@@ -271,6 +287,8 @@ Window {
                     onPressAndHold: {
                         interval: 3000
                         con.sessionTime_Reset()
+                        sessionTimerResetFlash.running = true
+
                     }
                     onPressed: {con.sessionTime_plusFive()}
                 }
