@@ -1,0 +1,11 @@
+{
+    "files": [
+        "main.py",
+        "DashMain.qml",
+        "dash_V9.qml",
+        "Speed.qml",
+        "FuelLevel.qml",
+        "PitMsg.qml",
+        "ValueBox.qml"
+    ]
+}
