@@ -7,15 +7,16 @@ import QtQuick.Controls.Universal 2.0
 //gasdash todo
 
 //[] pit message logic
-//[x]ignition mapping
-//[x]race data
+//[]ignition mapping send to bike signal
+//[]race data slot
 //[]top speed visual
-//[]gear pos movement
+//[]gear pos animation
+//[]error message system with signal integration
 
 Window {
     id: root
     visible: true
-    color: "#d8d9d8"
+    color: "#cbcbcb"
     //property alias rectangleWidth: rectangle.width
     width:1280
     height:800
@@ -49,47 +50,55 @@ Window {
         let rgb = [0,0,0,0]
         switch (colorIndex){
         case 0:
-            rgb=[0,0,1,1]
+            rgb=[0,0,1,1];
+            engineTemp_hot.running = false;
+            engineTemp.visible=true;
             break;
         case 1:
-            rgb=[0,colorRatio,1,1]
+            rgb=[0,colorRatio,1,1];
+            engineTemp_hot.running = false;
+            engineTemp.visible=true;
             break;
         case 2:
-            rgb=[0,1,colorRatio,1]
+            rgb=[0,1,1-colorRatio,1];
+            engineTemp_hot.running = false;
+            engineTemp.visible=true;
             break;
         case 3:
-            rgb=[colorRatio,1,0,1]
+            rgb=[colorRatio,1,0,1];
+            engineTemp_hot.running = false;
+            engineTemp.visible=true;
             break;
         case 4:
-            rgb = rgb=[1,colorRatio,0,1]
+            rgb = rgb=[1,1-colorRatio,0,1];
+            engineTemp_hot.running = false;
+            engineTemp.visible=true;
             break;
         case -1:
-            rgb=[1,0,0,1]
-            //TODO: flashing alarm light
+            rgb=[1,0,0,1];
+            engineTemp_hot.running = true;
             break;
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
-//    Timer {
-//        interval: 16
-//        running: true
-//        repeat: true
-//        onTriggered: {
-//            var sensorDict = con.sensorRefresh()
-//            root.rpm = parseInt(sensorDict['rpm'])
-//            speed.text = parseInt(sensorDict['speed'])
-//        }
-//    }
+    //    Timer {
+    //        interval: 16
+    //        running: true
+    //        repeat: true
+    //        onTriggered: {
+    //            var sensorDict = con.sensorRefresh()
+    //            root.rpm = parseInt(sensorDict['rpm'])
+    //            speed.text = parseInt(sensorDict['speed'])
+    //        }
+    //    }
     Timer {
         interval: 500
         running: true
         repeat: true
         onTriggered: {
             sessionTimer.boxValueText=con.sessionTime()
-            console.log(con.sessionTime())
-            
         }
-     
+
     }
 
 
@@ -172,6 +181,30 @@ Window {
                 boxValueText: {root.engTemp.toString()}
                 labelText: "ENG TEMP"
                 rectangleColor: "#00ffffff"
+                visible: true
+
+                SequentialAnimation
+                {
+                    id: engineTemp_hot
+                    running: false
+                    loops: Animation.Infinite
+
+                    PropertyAnimation
+                    {
+                        target: engineTemp
+                        property: "visible";
+                        to: false;
+                        duration: 150
+                    }
+
+                    PropertyAnimation
+                    {
+                        target: engineTemp
+                        property: "visible";
+                        to: true;
+                        duration: 100
+                    }
+                }
 
             }
         }
@@ -226,6 +259,21 @@ Window {
                 boxValueColor: root.fontColor
                 boxValueText: "29:54"
                 boxValueFontfamily: "Arial"
+
+                MouseArea {
+                    id: mouseArea1
+                    width: sessionTimer.width
+                    height: sessionTimer.height
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.top: parent.top
+                    anchors.topMargin: 0
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onPressAndHold: {
+                        interval: 3000
+                        con.sessionTime_Reset()
+                    }
+                    onPressed: {con.sessionTime_plusFive()}
+                }
 
 
             }
@@ -304,25 +352,35 @@ Window {
 
         }
 
-
-    }
-
-    Dial {
-        id: dial
-        x: 258
-        y: 0
-        stepSize: 1
-        bottomPadding: 1
-        from: 1280
-        value:1
-        onValueChanged: {
-            //root.engTemp = value
-            //rpmBar.width = value
-            fuelBar.fuelQtyHeight = value
+        Slider {
+            id: slider
+            x: 617
+            y: 299
+            width: 649
+            height: 36
+            stepSize: 1
+            to: 300
+            from: 1
+            value: 0.5
+            onValueChanged: {
+                root.engTemp = value
+            }
         }
-
+        Slider {
+            id: slider2
+            x: 617
+            y: 275
+            width: 649
+            height: 36
+            stepSize: 1
+            to: 300
+            from: 0
+            value: 0
+            onValueChanged: {
+                fuelBar.fuelQtyHeight = value
+            }
+        }
     }
-
 }
 
 

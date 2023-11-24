@@ -30,11 +30,27 @@ class Bridge(QObject):
 #        data = requests.get(r'http://192.168.254.12:9000/dashGet')
 #        data = ast.literal_eval(data.text)
 #        return data[value]
+    # @Slot(result=str)
+    # def sessionTime(self):
+    #     floatTime = time.monotonic()
+    #     minutes, seconds = divmod(floatTime, 60)
+    #     return "%02d:%02d" % (minutes, seconds)
+    
+    # @Slot(str, result=str)
+    # def testSlot(self, i):
+    #     print(i)
+
     @Slot(result=str)
     def sessionTime(self):
-        floatTime = time.monotonic()
-        minutes, seconds = divmod(floatTime, 60)
-        return "%02d:%02d" % (minutes, seconds)
+        return bike.sessionTime()
+
+    @Slot()
+    def sessionTime_Reset(self):
+        bike.sessionTime(reset=True)
+
+    @Slot()
+    def sessionTime_plusFive(self):
+        bike.sessionTime(plusFive=True)
 
 
 #   @Slot(result=str)
@@ -84,7 +100,7 @@ def uiBoot():
     # Get the path of the current directory, and then add the name
     # of the QML file, to load it.
     # qmlFile = join(dirname(__file__), "dash_v9.qml")
-    qmlFile = join(dirname(__file__), "DashMain.qml")
+    qmlFile = join(dirname(__file__), "display/DashMain.qml")
     engine.load(abspath(qmlFile))
 
     sys.exit(app.exec_())
@@ -104,7 +120,7 @@ if __name__ == "__main__":
 
     # Get the path of the current directory, and then add the name
     # of the QML file, to load it.
-    qmlFile = join(dirname(__file__), "DashMain.qml")
+    qmlFile = join(dirname(__file__), "display/DashMain.qml")
     #    qmlFile = join(dirname(__file__), 'stck.qml')
     engine.load(abspath(qmlFile))
 

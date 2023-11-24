@@ -1,26 +1,25 @@
-import serial
+# import serial
 import time
 import json
-import matplotlib.path as path
+
+# import matplotlib.path as path
 import subprocess
 import threading
 
-import board
-import busio
-import RPi.GPIO as GPIO
-import adafruit_bno055
-import adafruit_gps
-import adafruit_max31855
-import digitalio
+# import board
+# import busio
+# import RPi.GPIO as GPIO
+# import adafruit_bno055
+# import adafruit_gps
+# import adafruit_max31855
+# import digitalio
 
-from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+# from influxdb_client import InfluxDBClient, Point, WritePrecision
+# from influxdb_client.client.write_api import SYNCHRONOUS
 
 ### to do ###
-# camera
 # timeout for speed and rpm
-# lap timing / sector timing
-## ui config vs whatever
+# [] define TODO list
 
 
 class Bike:
@@ -29,7 +28,6 @@ class Bike:
         debug=False,
         _wheelspeed=False,
         _rpm=False,
-        _gps=False,
         _imu=False,
         _engTemp=False,
         influxUrl="http://192.168.254.40:8086",
@@ -39,46 +37,32 @@ class Bike:
         self.gpioPin_wheelspeed = 17
         self.gpioPin_rpm = 27
         self.gpioPin_engineTemp = 17
-        self.
+
         """_args enables sensor type, off by default"""
         # influx config
-        self.org = "rammers"
-        self.bucket = race
-        self.client = InfluxDBClient(url=influxUrl, token=influxToken)
-        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+        # self.org = "rammers"
+        # self.bucket = race
+        # self.client = InfluxDBClient(url=influxUrl, token=influxToken)
+        # self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
-        # 
+        # race data from timing service
         self.lap = 0
         self.distance = 0
-        self.speed = 0  # mph
-        self.rpm = 0  # int
-        self.engineTemp = 0
-        self.airTemp = 0
-        self.rpm_elapse = time.monotonic()
-        self.wheel_elapse = time.monotonic()
-
-
-        # timing
-        self.current_sector = 1
-        self.lapTime = 0
-        self.lastLap = 0
         self.bestLap = 0
-        self.sessionTime = time.monotonic()
+
+        # bike data
         self.rider = "default"
-        self.sectorTime = time.monotonic()
-        self.mapData = 0
-        self.s1Time = 0
-        self.s2Time = 0
-        self.s3Time = 0
+        self.speed = 0  # mph
+        self.rpm = 0
+        self.engineTemp = 0  # F
+        self.airTemp = 0  # F
+        self.rpm_elapse = (
+            time.monotonic()
+        )  # time value for calculating duration between signals
+        self.wheel_elapse = time.monotonic()
+        self.sessionTime_elapse = time.monotonic()+1800 #30minute
 
-        # if debug == True:
-        #     _wheelspeed = False
-        #     _rpm=True
-        #     _gps=True
-        #     _imu=True
-        #     _engTemp=True
-
-        if _wheelspeed == True or _rpm == True:
+        if _wheelspeed == True or _rpm == True:  # configure GPIO if used
             self.GPIO = GPIO
             self.GPIO.setmode(GPIO.BCM)
             self.GPIO.setwarnings(False)
@@ -87,7 +71,10 @@ class Bike:
             # self.GPIO.setup(17, GPIO.IN, GPIO.PUD_DOWN)
             self.GPIO.setup(self.gpioPin_wheelspeed, GPIO.IN, GPIO.PUD_UP)
             self.GPIO.add_event_detect(
-                self.gpioPin_wheelspeed, GPIO.FALLING, callback=self.speedCalc, bouncetime=20
+                self.gpioPin_wheelspeed,
+                GPIO.FALLING,
+                callback=self.speedCalc,
+                bouncetime=20,
             )
 
         if _rpm == True:
@@ -125,7 +112,7 @@ class Bike:
         try:
             airTemp = (
                 round(self.imu.temperature * 9 / 5 + 32, 0)
-                if self.units == "standard" #TODO fix
+                if self.units == "standard"  # TODO fix
                 else round(self.imu.temperature, 0)
             )
             rotX = round(self.imu.euler[0], 6)
@@ -168,7 +155,6 @@ class Bike:
         self.rpm = int(60 / rpmTimeDelta)  # 1rev/pulse  conversion
         # return self.rpm
 
-    
     def call_sensorDict(self):
         while True:
             lap = self.lap
@@ -185,7 +171,7 @@ class Bike:
                 "rotationZ": imuDict["rotZ"],
                 "accelX": imuDict["accelX"],
                 "accelY": imuDict["accelY"],
-                "accelZ": imuDict["accelZ"]
+                "accelZ": imuDict["accelZ"],
             }
 
             # try:
@@ -198,7 +184,17 @@ class Bike:
             time.sleep(0.016)
 
     def messageRefresh(self):
+        # TODO
         pass
+
+    def sessionTime(self, reset=False, interval=1800, plusFive=False):
+        if reset == True:
+            self.sessionTime_elapse = time.monotonic() + interval
+        if plusFive == True:
+            self.sessionTime_elapse += 300
+        floatTime = self.sessionTime_elapse - time.monotonic()
+        minutes, seconds = divmod(floatTime, 60)
+        return "%02d:%02d" % (minutes, seconds)
 
 
 if __name__ == "__main__":
