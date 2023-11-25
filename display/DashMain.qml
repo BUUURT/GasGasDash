@@ -9,11 +9,11 @@ import QtQuick.Controls.Universal 2.0
 //[] pit message logic
 //[x]ignition mapping send to bike signal
 //[]race data slot
-//[]top speed visual
+//[x]top speed visual
 //[]gear pos animation
 //[]error message system with signal integration
 //[]low fuel visual alarm
-//[]fix session time animation
+//[x]fix session time animation
 
 Window {
     id: root
@@ -28,7 +28,6 @@ Window {
     property color fontBcolor: "gray"
     property color fontColorOp: "white"
     property bool darkMode: false
-    //property string engineTemp: "0"
     property string gear: "N"
     property int engTemp: 220
     property int ignitionMapSetting: 1
@@ -105,6 +104,18 @@ Window {
             speed.speedTextText = maxSpeed.text
         }
     }
+    onGearChanged: {
+        gearPos.boxValueText = root.gear
+        if(root.gear == "N"){
+            gearPos.rectangleColor = "#00ff00"
+        }
+        else if(root.gear == "1" || root.gear == "2" || root.gear == "3"){
+            gearPos.rectangleColor = root.fontBcolor
+        }
+        else if(root.gear == "4"){
+            gearPos.rectangleColor = "#0074c7"
+        }
+     }
 
     //TODO update sensor dict
     //    Timer {
@@ -239,7 +250,7 @@ Window {
             anchors.top: parent.top
             anchors.leftMargin: 5
             anchors.topMargin: 5
-            boxValueColor: "black"//root.fontColor
+            boxValueColor: root.fontColor
             boxValueText: root.gear
             labelText: "GEAR"
             rectangleColor: "#00ff00"
@@ -574,6 +585,26 @@ Window {
             from: 0
             onValueChanged: {
                 root.speed = value
+            }
+        }
+
+        Slider {
+            id: slider3
+            x: 617
+            y: 222
+            width: 649
+            height: 36
+            value: 0
+            stepSize: 1
+            to: 4
+            from: 0
+            onValueChanged: {
+                if(value==0){
+                    root.gear = "N"
+                }
+                else{
+                    root.gear = value.toString()
+                }
             }
         }
     }
