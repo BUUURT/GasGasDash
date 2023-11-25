@@ -194,7 +194,7 @@ class Bike:
         # TODO
         pass
 
-    def sessionTime(self, reset=False, interval=1800, plusFive=False):
+    def sessionTime(self, reset=False, interval=1801, plusFive=False):
         if reset == True:
             self.sessionTime_elapse = time.monotonic() + interval
         if plusFive == True:

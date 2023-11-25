@@ -7,13 +7,13 @@ import QtQuick.Controls.Universal 2.0
 //gasdash todo
 
 //[] pit message logic
-//[]ignition mapping send to bike signal
+//[x]ignition mapping send to bike signal
 //[]race data slot
 //[]top speed visual
 //[]gear pos animation
 //[]error message system with signal integration
 //[]low fuel visual alarm
-//[]
+//[]fix session time animation
 
 Window {
     id: root
@@ -26,20 +26,27 @@ Window {
 
     property color fontColor: "black"
     property color fontBcolor: "gray"
+    property color fontColorOp: "white"
     property bool darkMode: false
     //property string engineTemp: "0"
     property string gear: "N"
     property int engTemp: 220
     property int ignitionMapSetting: 1
+    property int speed: 0
+    property int oldSpeed1: 0
+    property int oldSpeed2: 0
+    property int speedPause: 0
 
     onDarkModeChanged: {
-        if(root.darkMode==true){
-            image.source= "backgroundMask_dark.png"
-            root.fontColor="white"
+        if(root.darkMode == true){
+            image.source = "backgroundMask_dark.png"
+            root.fontColor = "white"
+            root.fontColorOp = "black"
         }
         if(root.darkMode==false){
             image.source= "backgroundMask_light.png"
             root.fontColor="black"
+            root.fontColorOp = "white"
         }
     }
     onEngTempChanged: {
@@ -83,6 +90,22 @@ Window {
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
+
+    onSpeedChanged: {
+        if(root.speedPause == 0){
+            speed.speedTextText = root.speed.toString() //Update label
+            if(root.speed<root.oldSpeed1 && root.oldSpeed1>=root.oldSpeed2){ //max speed dropping
+                maxSpeedFlash.running = true
+                maxSpeed.text = root.oldSpeed1.toString()
+            }
+            root.oldSpeed2 = root.oldSpeed1
+            root.oldSpeed1 = root.speed
+        }
+        else {
+            speed.speedTextText = maxSpeed.text
+        }
+    }
+
     //TODO update sensor dict
     //    Timer {
     //        interval: 16
@@ -92,7 +115,7 @@ Window {
     //            var sensorDict = con.sensorRefresh()
     //            root.rpm = parseInt(sensorDict['rpm'])
     //            speed.text = parseInt(sensorDict['speed'])
-                  // speed, rpm, air temp, gear
+    // speed, rpm, air temp, gear
 
     //        }
     //    }
@@ -103,12 +126,8 @@ Window {
         repeat: true
         onTriggered: {
             sessionTimer.boxValueText=con.sessionTime()
-
         }
-
     }
-
-
     Rectangle {
         id: rpmBar
         width: 498
@@ -144,9 +163,6 @@ Window {
             y: 533
             width: 761
             height: 254
-
-
-
             ValueBox {
                 id: ignitionMap
                 anchors.verticalCenter: parent.verticalCenter
@@ -160,6 +176,7 @@ Window {
                 boxValueText: {root.ignitionMapSetting.toString()}
                 labelText: "IGN MAP"
                 rectangleColor: "#00ffffff"
+                boxValueStyleColor: root.fontColorOp
 
                 MouseArea {
                     id: mouseArea2
@@ -177,26 +194,26 @@ Window {
             ValueBox {
                 id: engineTemp
                 x: 197
+                height: 224
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: ignitionMap.right
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 15
                 anchors.verticalCenterOffset: 0
-                anchors.rightMargin: 261
+                anchors.rightMargin: 138
                 anchors.leftMargin: 50
                 boxValueColor: root.fontColor
                 boxValueText: {root.engTemp.toString()}
                 labelText: "ENG TEMP"
                 rectangleColor: "#00ffffff"
                 visible: true
-
+                boxValueStyleColor: root.fontColorOp
                 SequentialAnimation
                 {
                     id: engineTemp_hot
                     running: false
                     loops: Animation.Infinite
-
                     PropertyAnimation
                     {
                         target: engineTemp
@@ -204,7 +221,6 @@ Window {
                         to: false;
                         duration: 150
                     }
-
                     PropertyAnimation
                     {
                         target: engineTemp
@@ -213,10 +229,8 @@ Window {
                         duration: 100
                     }
                 }
-
             }
         }
-
         ValueBox {
             id: gearPos
             width: 159
@@ -229,7 +243,7 @@ Window {
             boxValueText: root.gear
             labelText: "GEAR"
             rectangleColor: "#00ff00"
-
+            boxValueStyleColor: root.fontColorOp
             MouseArea {
                 id: mouseArea
                 width: gearPos.width
@@ -245,57 +259,12 @@ Window {
                 }
             }
         }
-
         Item {
             id: raceData
             x: 631
             y: 341
             width: 625
             height: 446
-
-            ValueBox {
-                id: sessionTimer
-                x: 59
-                width: 450
-                height: 200
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.rightMargin: 10
-                anchors.topMargin: 15
-                labelText: "Session Timer"
-                boxValueColor: root.fontColor
-                boxValueText: "29:54"
-                boxValueFontfamily: "Arial"
-                PropertyAnimation
-                {
-                    id: sessionTimerResetFlash
-                    running: false
-                    target: sessionTimer
-                    property: "rectangleColor";
-                    to: "yellow";
-                    duration: 150
-                }
-
-                MouseArea {
-                    id: mouseArea1
-                    width: sessionTimer.width
-                    height: sessionTimer.height
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.top: parent.top
-                    anchors.topMargin: 0
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    onPressAndHold: {
-                        interval: 3000
-                        con.sessionTime_Reset()
-                        sessionTimerResetFlash.running = true
-
-                    }
-                    onPressed: {con.sessionTime_plusFive()}
-                }
-
-
-            }
-
             ValueBox {
                 id: position
                 y: 234
@@ -305,13 +274,13 @@ Window {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 15
                 anchors.leftMargin: 0
-                labelText: "Position"
+                labelText: "POSITION"
                 rectangleColor: "#00ffffff"
                 boxValueColor: root.fontColor
-                boxValueText: "15"
+                boxValueText: "X"
                 boxValueFontfamily:"Arial"
+                boxValueStyleColor: root.fontColorOp
             }
-
             ValueBox {
                 id: lapCount
                 y: 234
@@ -322,15 +291,13 @@ Window {
                 anchors.leftMargin: 10
                 anchors.bottomMargin: 15
                 anchors.rightMargin: 0
-                labelText: "Lap"
+                labelText: "LAP"
                 rectangleColor: "#00ffffff"
                 boxValueColor: root.fontColor
-                boxValueText: "650"
+                boxValueText: "0"
                 boxValueFontfamily: "Arial"
-
-
+                boxValueStyleColor: root.fontColorOp
             }
-
             FuelLevel {
                 id: fuelBar
                 x: 26
@@ -341,8 +308,122 @@ Window {
                 anchors.rightMargin: 10
                 anchors.bottomMargin: 0
             }
+            ValueBox {
+                id: sessionTimer
+                x: 59
+                width: 450
+                height: 200
+                anchors.right: parent.right
+                anchors.top: parent.top
+                rectangleColor: "#00ffffff"
+                anchors.rightMargin: 10
+                anchors.topMargin: 15
+                labelText: "SESSION TIMER"
+                boxValueColor: root.fontColor
+                boxValueText: "29:54"
+                boxValueFontfamily: "Arial"
+                boxValueStyleColor: root.fontColorOp
+                Rectangle {
+                    id: resetBacklight
+                    width: 0
+                    height: 200
+                    color: root.fontBcolor
+                    radius: 10
+                    border.width: 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                }
+                SequentialAnimation {
+                    id: resetFlash
+                    running: false
+                    ParallelAnimation {
+                        PropertyAnimation {
+                            target: sessionTimer
+                            property: "scale"
+                            to: .95
+                            duration: 5
+                        }
+                    }
+                    PropertyAnimation {
+                        target: resetBacklight
+                        property: "width"
+                        to: 450
+                        duration: 200
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "scale"
+                        to: 1.1
+                        duration: 50
+                    }
+                    PropertyAnimation {
+                        target: resetBacklight
+                        property: "width"
+                        to: 0
+                        duration: 0
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "scale"
+                        to: 1
+                        duration: 5
+                    }
+                }
+                SequentialAnimation {
+                    id: addTimeFlash
+                    running: false
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "scale"
+                        to: .95
+                        duration: 5
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "scale"
+                        to: 1.10
+                        duration: 200
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "rectangleColor"
+                        to: root.fontBcolor
+                        duration: 100
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "scale"
+                        to: 1
+                        duration: 20
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "rectangleColor"
+                        to: "#00ffffff"
+                        duration: 20
+                    }
+                }
+                MouseArea {
+                    id: mouseArea1
+                    width: sessionTimer.width
+                    height: sessionTimer.height
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.top: parent.top
+                    anchors.topMargin: 0
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onPressAndHold: {
+                        interval: 2000
+                        con.sessionTime_Reset()
+                        resetFlash.running = true
+                    }
+                    onClicked: {
+                        con.sessionTime_plusFive()
+                        addTimeFlash.running = true
+                    }
+                }
+            }
         }
-
         PitMsg {
             id: pitMsg
             x: 184
@@ -353,21 +434,103 @@ Window {
             anchors.rightMargin: 0
             anchors.topMargin: 0
         }
-
         Speed {
             id: speed
             x: 132
             y: 302
             anchors.left: parent.left
             anchors.bottom: parent.bottom
+            speedTextColor: root.fontColor
             anchors.leftMargin: 130
             anchors.bottomMargin: 250
             speedLabelColor: root.fontBcolor
             speedTextText: "28"
-            speedTextColor: root.fontColor
             visible: true
+            SequentialAnimation {
+                id: maxSpeedFlash
+                running: false
+                ParallelAnimation {
+                    PropertyAnimation {
+                        target: root
+                        property: "speedPause"
+                        to: 1
+                        duration: 0
+                    }
+                    PropertyAnimation {
+                        target: speed
+                        property: "scale"
+                        to: 1.2
+                        duration: 100
+                    }
+                }
+                SequentialAnimation {
+                    loops: 6
+                    PropertyAnimation {
+                        target: speed
+                        property: "speedTextColor"
+                        to: root.fontColor
+                        duration: 50
+                    }
+                    PropertyAnimation {
+                        target: speed
+                        property: "speedTextColor"
+                        to: "#ff00ff00"
+                        duration: 100
+                    }
+                }
+                PropertyAnimation {
+                    target: root
+                    property: "speedPause"
+                    to: 0
+                    duration: 0
+                }
+                PropertyAnimation {
+                    target: speed
+                    property: "speedTextColor"
+                    to: root.fontColor
+                    duration: 0
+                }
+                PropertyAnimation {
+                    target: speed
+                    property: "scale"
+                    to: 1
+                    duration: 0
+                }
+            }
 
+            Text {
+                id: maxSpeed
+                width: 85
+                height: 47
+                color: root.fontColor
+                text: qsTr("0")
+                anchors.left: parent.right
+                anchors.top: parent.top
 
+                font.pixelSize: 75
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                anchors.leftMargin: -40
+                anchors.topMargin: 20
+                fontSizeMode: Text.Fit
+                minimumPixelSize: 12
+                font.family: "BN Elements"
+
+                Text {
+                    id: text1
+                    width: 84
+                    height: 28
+                    color: root.fontColor
+                    text: qsTr("MAX")
+                    anchors.top: parent.bottom
+                    font.pixelSize: 25
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.family: "BN Elements"
+                    anchors.topMargin: -10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
         }
 
         Slider {
@@ -398,7 +561,23 @@ Window {
                 fuelBar.fuelQtyHeight = value
             }
         }
+
+        Slider {
+            id: slider1
+            x: 617
+            y: 250
+            width: 649
+            height: 36
+            value: 0
+            stepSize: 1
+            to: 100
+            from: 0
+            onValueChanged: {
+                root.speed = value
+            }
+        }
     }
+
 }
 
 

@@ -4,6 +4,7 @@ Item {
     id: item1
     width: 200
     height: 200
+    property alias boxValueStyleColor: boxValue.styleColor
     property alias rectangleBordercolor: rectangle.border.color
     property alias boxValueFontfamily: boxValue.font.family
     property alias rectangleColor: rectangle.color
@@ -24,14 +25,15 @@ Item {
 
         Text {
             id: boxValue
-            width: item1.width
+            width: item1.width*.90
             height: item1.height
             color: "#000000"
             text: "222"
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pointSize: 150
+            style: Text.Outline
+            font.pointSize: 125
             font.bold: true
             fontSizeMode: Text.Fit
             font.family: "BN Elements"
