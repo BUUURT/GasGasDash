@@ -6,6 +6,7 @@
         "Speed.qml",
         "FuelLevel.qml",
         "PitMsg.qml",
-        "ValueBox.qml"
+        "ValueBox.qml",
+        "teee.qml"
     ]
 }

@@ -4,118 +4,145 @@ import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.4
 import QtQuick.Controls.Universal 2.0
 
-//gasdash todo
-
-//[] pit message logic
+//TODO
 //[x]ignition mapping send to bike signal
-//[]race data slot
 //[x]top speed visual
-//[]gear pos animation
+//[x]gear pos animation
+//[x]fix session time animation
+//[x] rpm shift light
+//[] pit message logic
+//[]race data slot
 //[]error message system with signal integration
 //[]low fuel visual alarm
-//[x]fix session time animation
+//[] alarm on session time
+//[] launch control
 
 Window {
     id: root
     visible: true
     color: "#cbcbcb"
     //property alias rectangleWidth: rectangle.width
-    width:1280
-    height:800
+    width: 1280
+    height: 800
     visibility: Window.Maximized
 
     property color fontColor: "black"
     property color fontBcolor: "gray"
-    property color fontColorOp: "white"
+    property color fontColorOp: "black"
+    property color blueHighlight: "#0050ff"
+    property color rpmColor: "#010073"
+    property color rpmColorYellow: "#dfff00"
+    property color rpmColorShift: "#ff3000"
     property bool darkMode: false
+    property string imageSource: "backgroundMask_light.png"
     property string gear: "N"
-    property int engTemp: 220
+    property int engTemp: 0
     property int ignitionMapSetting: 1
     property int speed: 0
     property int oldSpeed1: 0
     property int oldSpeed2: 0
     property int speedPause: 0
+    property int rpm: 0
+//    property int delay: 250
+    property int fuelLevel: 100
+
+
+
 
     onDarkModeChanged: {
-        if(root.darkMode == true){
-            image.source = "backgroundMask_dark.png"
+        if (root.darkMode == true) {
+//            image.source = "backgroundMask_dark.png"
+            root.imageSource = "backgroundMask_dark.png"
             root.fontColor = "white"
             root.fontColorOp = "black"
         }
-        if(root.darkMode==false){
-            image.source= "backgroundMask_light.png"
-            root.fontColor="black"
-            root.fontColorOp = "white"
+        if (root.darkMode == false) {
+//            image.source = "backgroundMask_light.png"
+            root.imageSource = "backgroundMask_light.png"
+            root.fontColor = "black"
+            root.fontColorOp = "black"
         }
     }
     onEngTempChanged: {
-        const thresholds = [130, 160, 190, 220, 250]; // temp values(f) for blue, teal, green, yellow, red
-        let colorIndex = thresholds.findIndex(i => root.engTemp < i);
-        const lowerThreshold = thresholds[colorIndex-1];
-        const upperThreshold = thresholds[colorIndex];
-        const colorRatio = (root.engTemp-lowerThreshold)/(upperThreshold-lowerThreshold);
+        const thresholds = [130, 160, 190, 220, 250]
+        // temp values(f) for blue, teal, green, yellow, red
+        let colorIndex = thresholds.findIndex(i => root.engTemp < i)
+        const lowerThreshold = thresholds[colorIndex - 1]
+        const upperThreshold = thresholds[colorIndex]
+        const colorRatio = (root.engTemp - lowerThreshold) / (upperThreshold - lowerThreshold)
 
-        let rgb = [0,0,0,0]
-        switch (colorIndex){
+        let rgb = [0, 0, 0, 0]
+        switch (colorIndex) {
         case 0:
-            rgb=[0,0,1,1];
-            engineTemp_hot.running = false;
-            engineTemp.visible=true;
-            break;
+            rgb = [0, 0, 1, 1]
+            engineTemp_hot.running = false
+            engineTemp.visible = true
+            break
         case 1:
-            rgb=[0,colorRatio,1,1];
-            engineTemp_hot.running = false;
-            engineTemp.visible=true;
-            break;
+            rgb = [0, colorRatio, 1, 1]
+            engineTemp_hot.running = false
+            engineTemp.visible = true
+            break
         case 2:
-            rgb=[0,1,1-colorRatio,1];
-            engineTemp_hot.running = false;
-            engineTemp.visible=true;
-            break;
+            rgb = [0, 1, 1 - colorRatio, 1]
+            engineTemp_hot.running = false
+            engineTemp.visible = true
+            break
         case 3:
-            rgb=[colorRatio,1,0,1];
-            engineTemp_hot.running = false;
-            engineTemp.visible=true;
-            break;
+            rgb = [colorRatio, 1, 0, 1]
+            engineTemp_hot.running = false
+            engineTemp.visible = true
+            break
         case 4:
-            rgb = rgb=[1,1-colorRatio,0,1];
-            engineTemp_hot.running = false;
-            engineTemp.visible=true;
-            break;
+            rgb = rgb = [1, 1 - colorRatio, 0, 1]
+            engineTemp_hot.running = false
+            engineTemp.visible = true
+            break
         case -1:
-            rgb=[1,0,0,1];
-            engineTemp_hot.running = true;
-            break;
+            rgb = [1, 0, 0, 1]
+            engineTemp_hot.running = true
+            break
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
 
     onSpeedChanged: {
-        if(root.speedPause == 0){
+        if (root.speedPause == 0) {
             speed.speedTextText = root.speed.toString() //Update label
-            if(root.speed<root.oldSpeed1 && root.oldSpeed1>=root.oldSpeed2){ //max speed dropping
+            if (root.speed < root.oldSpeed1
+                    && root.oldSpeed1 >= root.oldSpeed2) {
+                //max speed dropping
                 maxSpeedFlash.running = true
                 maxSpeed.text = root.oldSpeed1.toString()
             }
             root.oldSpeed2 = root.oldSpeed1
             root.oldSpeed1 = root.speed
-        }
-        else {
+        } else {
             speed.speedTextText = maxSpeed.text
         }
     }
+
     onGearChanged: {
-        gearPos.boxValueText = root.gear
-        if(root.gear == "N"){
-            gearPos.rectangleColor = "#00ff00"
-        }
-        else if(root.gear == "1" || root.gear == "2" || root.gear == "3"){
-            gearPos.rectangleColor = root.fontBcolor
-        }
-        else if(root.gear == "4"){
-            gearPos.rectangleColor = "#0074c7"
-        }
-     }
+        gearDial.state = root.gear
+    }
+
+    onRpmChanged: {
+        rpmBar.width = root.rpm*1253/12000
+        if(root.rpm<10000){
+            rpmBar.state = "normal"}
+        if(root.rpm>10000){
+            rpmBar.state = "yellow"}
+        if(root.rpm>10750){
+            rpmBar.state = "shift"}
+    }
+
+    onFuelLevelChanged: {
+        fuelBar.fuelQtyHeight = root.fuelLevel*325/100
+        if(root.fuelLevel==100){fuelBar.state = "full"}
+        else if(root.fuelLevel<10){fuelBar.state = "empty"}
+        else if(root.fuelLevel<20){fuelBar.state = "reserve"}
+        else if(root.fuelLevel<100){fuelBar.state = "mid"}
+    }
 
     //TODO update sensor dict
     //    Timer {
@@ -136,13 +163,14 @@ Window {
         running: true
         repeat: true
         onTriggered: {
-            sessionTimer.boxValueText=con.sessionTime()
+            sessionTimer.boxValueText = con.sessionTime()
         }
     }
+
     Rectangle {
         id: rpmBar
-        width: 498
-        color: "#010073"
+        width: 0
+        color: root.rpmColor
         border.width: 0
         anchors.left: parent.left
         anchors.top: parent.top
@@ -150,6 +178,75 @@ Window {
         anchors.bottomMargin: -450
         anchors.topMargin: 80
         anchors.leftMargin: 0
+        states: [
+            State {
+                name: "normal"
+                PropertyChanges {target: shiftFlasherYellow; running: false}
+                PropertyChanges {target: shiftFlasherRed; running: false}
+                PropertyChanges {target: flasher; opacity: 0}
+            },
+            State {
+                name: "yellow"
+                PropertyChanges {target: shiftFlasherYellow; running: true}
+                PropertyChanges {target: shiftFlasherRed; running: false}
+
+
+            },
+            State {
+                name: "shift"
+                PropertyChanges {target: shiftFlasherYellow; running: false}
+                PropertyChanges {target: shiftFlasherRed; running: true}
+            }
+        ]
+        SequentialAnimation {
+            id: shiftFlasherRed
+            loops: -1
+            running: false
+            PropertyAnimation {
+                target: flasher
+                property: "color"
+                to: "#ff0000"
+                duration:0
+            }
+            PropertyAnimation {
+                target: flasher
+                property: "opacity"
+                to: 1
+                duration: 100
+
+            }
+            PropertyAnimation {
+                target: flasher
+                property: "opacity"
+                to: 0
+                duration: 100
+            }
+        }
+        SequentialAnimation {
+            id: shiftFlasherYellow
+            loops: -1
+            running: false
+            PropertyAnimation {
+                target: flasher
+                property: "color"
+                to: "#ffff00"
+                duration:0
+            }
+            PropertyAnimation {
+                target: flasher
+                property: "opacity"
+                to: 1
+                duration: 100
+
+            }
+            PropertyAnimation {
+                target: flasher
+                property: "opacity"
+                to: 0
+                duration: 100
+            }
+        }
+
     }
 
     Image {
@@ -160,7 +257,7 @@ Window {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         smooth: false
-        source: "backgroundMask_light.png"
+        source: root.imageSource
         sourceSize.height: 801
         sourceSize.width: 1281
         anchors.rightMargin: 0
@@ -168,6 +265,7 @@ Window {
         anchors.bottomMargin: 0
         anchors.topMargin: 0
         fillMode: Image.Stretch
+
         Item {
             id: bikeData
             x: 27
@@ -184,7 +282,9 @@ Window {
                 anchors.bottomMargin: 15
                 anchors.leftMargin: 50
                 boxValueColor: root.fontColor
-                boxValueText: {root.ignitionMapSetting.toString()}
+                boxValueText: {
+                    root.ignitionMapSetting.toString()
+                }
                 labelText: "IGN MAP"
                 rectangleColor: "#00ffffff"
                 boxValueStyleColor: root.fontColorOp
@@ -196,7 +296,8 @@ Window {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
                     onPressed: {
-                        (root.ignitionMapSetting<4)? root.ignitionMapSetting +=1 : root.ignitionMapSetting = 1
+                        (root.ignitionMapSetting < 4) ? root.ignitionMapSetting
+                                                        += 1 : root.ignitionMapSetting = 1
                         con.ignitionMapUpdate(root.ignitionMapSetting)
                     }
                 }
@@ -215,37 +316,38 @@ Window {
                 anchors.rightMargin: 138
                 anchors.leftMargin: 50
                 boxValueColor: root.fontColor
-                boxValueText: {root.engTemp.toString()}
+                boxValueText: {
+                    root.engTemp.toString()
+                }
                 labelText: "ENG TEMP"
                 rectangleColor: "#00ffffff"
                 visible: true
                 boxValueStyleColor: root.fontColorOp
-                SequentialAnimation
-                {
+                SequentialAnimation {
                     id: engineTemp_hot
                     running: false
                     loops: Animation.Infinite
-                    PropertyAnimation
-                    {
+                    PropertyAnimation {
                         target: engineTemp
-                        property: "visible";
-                        to: false;
+                        property: "visible"
+                        to: false
                         duration: 150
                     }
-                    PropertyAnimation
-                    {
+                    PropertyAnimation {
                         target: engineTemp
-                        property: "visible";
-                        to: true;
+                        property: "visible"
+                        to: true
                         duration: 100
                     }
                 }
             }
         }
+
         ValueBox {
             id: gearPos
             width: 159
             height: 151
+            visible: true
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.leftMargin: 5
@@ -255,21 +357,8 @@ Window {
             labelText: "GEAR"
             rectangleColor: "#00ff00"
             boxValueStyleColor: root.fontColorOp
-            MouseArea {
-                id: mouseArea
-                width: gearPos.width
-                height: gearPos.height
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-                layer.enabled: true
-                cursorShape: Qt.BlankCursor
-                acceptedButtons: Qt.AllButtons
-                //anchors.horizontalCenter: parent.horizontalCenter
-                onPressed: {
-                    root.darkMode = !root.darkMode
-                }
-            }
         }
+
         Item {
             id: raceData
             x: 631
@@ -289,7 +378,7 @@ Window {
                 rectangleColor: "#00ffffff"
                 boxValueColor: root.fontColor
                 boxValueText: "X"
-                boxValueFontfamily:"Arial"
+                boxValueFontfamily: "Arial"
                 boxValueStyleColor: root.fontColorOp
             }
             ValueBox {
@@ -565,11 +654,11 @@ Window {
             width: 649
             height: 36
             stepSize: 1
-            to: 300
+            to: 100
             from: 0
             value: 0
             onValueChanged: {
-                fuelBar.fuelQtyHeight = value
+                root.fuelLevel = value
             }
         }
 
@@ -599,23 +688,265 @@ Window {
             to: 4
             from: 0
             onValueChanged: {
-                if(value==0){
+
+                if (value == 0) {
                     root.gear = "N"
-                }
-                else{
+                } else {
                     root.gear = value.toString()
                 }
             }
         }
-    }
 
+
+
+        Slider {
+            id: slider4
+            x: 617
+            y: 193
+            width: 649
+            height: 36
+            value: 0
+            stepSize: 1
+            to: 12500
+            from: 0
+            onValueChanged: {
+                root.rpm = value
+            }
+        }
+
+        Slider {
+            id: slider5
+            x: 617
+            y: 159
+            width: 649
+            height: 36
+            value: 0
+            stepSize: 1
+            to: 250
+            from: 0
+            onValueChanged: {
+                root.delay = value
+                console.log(value)
+            }
+        }
+
+        Rectangle {
+            id: flasher
+            y: 265
+            width: root.width
+            height: 100
+            opacity: 0
+            visible: true
+            color: "#ff0000"
+            anchors.top: parent.top
+            anchors.horizontalCenterOffset: 0
+            anchors.topMargin: 0
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+        Item {
+            id: gearDial
+            x: -486
+            y: -556
+            width: 800
+            height: gearDial.width
+            rotation: 0
+
+            states: [
+                State {
+                    name: "N"
+                    PropertyChanges {target: gearDial; rotation: 0}
+                    PropertyChanges {target: gearDialCirc; color: "#00ff47"}
+                },
+                State {
+                    name: "1"
+                    PropertyChanges {target: gearDial; rotation: 72}
+                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                },
+                State {
+                    name: "2"
+                    PropertyChanges {target: gearDial; rotation: 144}
+                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                },
+                State {
+                    name: "3"
+                    PropertyChanges {target: gearDial; rotation: 216}
+                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                },
+                State {
+                    name: "4"
+                    PropertyChanges {target: gearDial; rotation: 288}
+                    PropertyChanges {target: gearDialCirc; color: root.blueHighlight}
+                }
+            ]
+            transitions: [
+                Transition {
+                    from: "*"
+                    to: "*"
+                    RotationAnimation {
+                        target: gearDial
+                        duration: 1000
+                        easing.type: Easing.InOutQuad
+                    }
+
+                    ColorAnimation {
+                        target: gearDialCirc
+                        easing.bezierCurve: [0.655,0.144,0.817,0.465,1,1]
+                        duration: 300
+                        //easing.type: Easing.InOutQuad
+                    }
+                }
+
+            ]
+
+            Rectangle {
+                id: gearDialCirc
+                width: gearDial.width
+                height: gearDial.height
+                color: "#6d6edf"
+                radius: gearDial.width/2
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                MouseArea {
+                    id: mouseArea
+                    x: 0
+                    y: 0
+                    width: gearDial.width
+                    height: gearDial.height
+                    //                    anchors.verticalCenter: parent.verticalCenter
+                    //                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.fill: parent
+                    layer.enabled: true
+                    cursorShape: Qt.BlankCursor
+                    acceptedButtons: Qt.AllButtons
+                    //anchors.horizontalCenter: parent.horizontalCenter
+                    onPressed: {
+                        root.darkMode = !root.darkMode
+                    }
+                }
+            }
+            Text {
+                id: gearN
+                color: root.fontColor
+                style: Text.Outline
+                styleColor: root.fontColorOp
+                text: qsTr("N")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                anchors.leftMargin: gearDial.width/2
+                anchors.topMargin: gearDial.height/2
+                transformOrigin: Item.TopLeft
+                anchors.bottomMargin: 40
+                anchors.rightMargin: 130
+                font.family: "BN Elements"
+            }
+
+            Text {
+                id: gear1
+                color: root.fontColor
+                style: Text.Outline
+                styleColor: root.fontColorOp
+                x: 4
+                y: 4
+                text: qsTr("1")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                rotation: -72
+                font.family: "BN Elements"
+                anchors.leftMargin: gearDial.width/2
+                transformOrigin: Item.TopLeft
+                anchors.bottomMargin: 40
+                anchors.rightMargin: 200
+                anchors.topMargin: gearDial.height/2
+            }
+
+            Text {
+                id: gear2
+                color: root.fontColor
+                style: Text.Outline
+                styleColor: root.fontColorOp
+                x: 1
+                y: 1
+                text: qsTr("2")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                rotation: -144
+                font.family: "BN Elements"
+                anchors.leftMargin: gearDial.width/2
+                transformOrigin: Item.TopLeft
+                anchors.bottomMargin: 40
+                anchors.rightMargin: 130
+                anchors.topMargin: gearDial.height/2
+            }
+
+            Text {
+                id: gear3
+                color: root.fontColor
+                style: Text.Outline
+                styleColor: root.fontColorOp
+                x: -1
+                y: -1
+                text: qsTr("3")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                rotation: -216
+                font.family: "BN Elements"
+                anchors.leftMargin: gearDial.width/2
+                transformOrigin: Item.TopLeft
+                anchors.bottomMargin: 40
+                anchors.rightMargin: 130
+                anchors.topMargin: gearDial.height/2
+            }
+
+            Text {
+                id: gear4
+                color: root.fontColor
+                style: Text.Outline
+                styleColor: root.fontColorOp
+                x: 4
+                y: 4
+                text: qsTr("4")
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                rotation: -288
+                font.family: "BN Elements"
+                anchors.leftMargin: gearDial.width/2
+                transformOrigin: Item.TopLeft
+                anchors.bottomMargin: 40
+                anchors.rightMargin: 130
+                anchors.topMargin: gearDial.height/2
+            }
+        }
+    }
 }
 
-
-
-
-
-
-
-
-
+/*##^##
+Designer {
+    D{i:0}D{i:29;invisible:true}
+}
+##^##*/
