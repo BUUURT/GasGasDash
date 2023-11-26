@@ -10,10 +10,8 @@ import QtQuick.Controls.Universal 2.0
 //[x]gear pos animation
 //[x]fix session time animation
 //[x] rpm shift light
-//[] pit message logic
-//[]race data slot
-//[]error message system with signal integration
-//[]low fuel visual alarm
+//[x]low fuel visual alarm
+//[] pit message two way logic
 //[] alarm on session time
 //[] launch control
 
@@ -164,6 +162,11 @@ Window {
         repeat: true
         onTriggered: {
             sessionTimer.boxValueText = con.sessionTime()
+            if(sessionTimer.boxValueText[0]==="-"){overtimeFlasher.running=true}
+            else {
+                overtimeFlasher.running=false;
+                sessionTimer.rectangleColor = "#00000000";
+            }
         }
     }
 
@@ -504,6 +507,26 @@ Window {
                         duration: 20
                     }
                 }
+                SequentialAnimation {
+                    id: overtimeFlasher
+                    running: false
+                    loops: -1
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "rectangleColor"
+                        easing.bezierCurve: [0.2,0.2,0.8,0.8,1,1]
+                        to: "#aaffff00"
+                        duration: 500
+                    }
+                    PropertyAnimation {
+                        target: sessionTimer
+                        property: "rectangleColor"
+                        easing.bezierCurve: [0.2,0.2,0.8,0.8,1,1]
+                        to:"#00000000"
+                        duration: 500
+                    }
+                }
+
                 MouseArea {
                     id: mouseArea1
                     width: sessionTimer.width
@@ -720,6 +743,7 @@ Window {
             y: 159
             width: 649
             height: 36
+            visible: false
             value: 0
             stepSize: 1
             to: 250

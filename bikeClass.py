@@ -64,7 +64,7 @@ class Bike:
             time.monotonic()
         )  # time value for calculating duration between signals
         self.wheel_elapse = time.monotonic()
-        self.sessionTime_elapse = time.monotonic()+1802 #30minute
+        self.sessionTime_elapse = time.monotonic()+3#1802 #30minute
 
         if _wheelspeed == True or _rpm == True:  # configure GPIO if used
             self.GPIO = GPIO
@@ -200,8 +200,10 @@ class Bike:
         if plusFive == True:
             self.sessionTime_elapse += 300
         floatTime = self.sessionTime_elapse - time.monotonic()
+        sign = "-" if floatTime<0 else ""
+        floatTime = abs(floatTime)
         minutes, seconds = divmod(floatTime, 60)
-        return "%02d:%02d" % (minutes, seconds)
+        return sign+"%02d:%02d" % (minutes, seconds)
 
 
 if __name__ == "__main__":
