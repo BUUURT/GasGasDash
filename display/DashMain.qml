@@ -11,9 +11,15 @@ import QtQuick.Controls.Universal 2.0
 //[x]fix session time animation
 //[x] rpm shift light
 //[x]low fuel visual alarm
+//[x] alarm on session time
 //[] pit message two way logic
-//[] alarm on session time
+//[] menu for pit
 //[] launch control
+// - exit button
+// - fix scale
+// - button animation
+// - disable with speed
+
 
 Window {
     id: root
@@ -23,7 +29,7 @@ Window {
     width: 1280
     height: 800
     visibility: Window.Maximized
-
+    
     property color fontColor: "black"
     property color fontBcolor: "gray"
     property color fontColorOp: "black"
@@ -41,21 +47,22 @@ Window {
     property int oldSpeed2: 0
     property int speedPause: 0
     property int rpm: 0
-//    property int delay: 250
+    //    property int delay: 250
     property int fuelLevel: 100
-
-
-
-
+    
+    //launch control
+    property int rpmBar: 4000
+    property int step: 250
+    
     onDarkModeChanged: {
         if (root.darkMode == true) {
-//            image.source = "backgroundMask_dark.png"
+            //            image.source = "backgroundMask_dark.png"
             root.imageSource = "backgroundMask_dark.png"
             root.fontColor = "white"
             root.fontColorOp = "black"
         }
         if (root.darkMode == false) {
-//            image.source = "backgroundMask_light.png"
+            //            image.source = "backgroundMask_light.png"
             root.imageSource = "backgroundMask_light.png"
             root.fontColor = "black"
             root.fontColorOp = "black"
@@ -68,7 +75,7 @@ Window {
         const lowerThreshold = thresholds[colorIndex - 1]
         const upperThreshold = thresholds[colorIndex]
         const colorRatio = (root.engTemp - lowerThreshold) / (upperThreshold - lowerThreshold)
-
+        
         let rgb = [0, 0, 0, 0]
         switch (colorIndex) {
         case 0:
@@ -103,7 +110,7 @@ Window {
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
-
+    
     onSpeedChanged: {
         if (root.speedPause == 0) {
             speed.speedTextText = root.speed.toString() //Update label
@@ -123,7 +130,7 @@ Window {
     onGearChanged: {
         gearDial.state = root.gear
     }
-
+    
     onRpmChanged: {
         rpmBar.width = root.rpm*1253/12000
         if(root.rpm<10000){
@@ -133,7 +140,7 @@ Window {
         if(root.rpm>10750){
             rpmBar.state = "shift"}
     }
-
+    
     onFuelLevelChanged: {
         fuelBar.fuelQtyHeight = root.fuelLevel*325/100
         if(root.fuelLevel==100){fuelBar.state = "full"}
@@ -142,6 +149,13 @@ Window {
         else if(root.fuelLevel<100){fuelBar.state = "mid"}
     }
 
+    onRpmBarChanged: {
+        launchBar.x = root.rpmBar*1280/12250
+        limitDisplay.boxValueText = root.rpmBar
+    }
+    
+    
+    
     //TODO update sensor dict
     //    Timer {
     //        interval: 16
@@ -152,7 +166,7 @@ Window {
     //            root.rpm = parseInt(sensorDict['rpm'])
     //            speed.text = parseInt(sensorDict['speed'])
     // speed, rpm, air temp, gear
-
+    
     //        }
     //    }
     //TODO raceData dictionary retrevial
@@ -169,7 +183,7 @@ Window {
             }
         }
     }
-
+    
     Rectangle {
         id: rpmBar
         width: 0
@@ -192,8 +206,8 @@ Window {
                 name: "yellow"
                 PropertyChanges {target: shiftFlasherYellow; running: true}
                 PropertyChanges {target: shiftFlasherRed; running: false}
-
-
+                
+                
             },
             State {
                 name: "shift"
@@ -216,7 +230,7 @@ Window {
                 property: "opacity"
                 to: 1
                 duration: 100
-
+                
             }
             PropertyAnimation {
                 target: flasher
@@ -240,7 +254,7 @@ Window {
                 property: "opacity"
                 to: 1
                 duration: 100
-
+                
             }
             PropertyAnimation {
                 target: flasher
@@ -250,8 +264,19 @@ Window {
             }
         }
 
+        Rectangle {
+            id: launchBar
+            x: 348
+            y: -321
+            width: 10
+            height: 200
+            color: "#ff0000"
+            anchors.top: parent.top
+            anchors.topMargin: 0
+        }
+        
     }
-
+    
     Image {
         id: image
         visible: true
@@ -268,7 +293,7 @@ Window {
         anchors.bottomMargin: 0
         anchors.topMargin: 0
         fillMode: Image.Stretch
-
+        
         Item {
             id: bikeData
             x: 27
@@ -291,7 +316,7 @@ Window {
                 labelText: "IGN MAP"
                 rectangleColor: "#00ffffff"
                 boxValueStyleColor: root.fontColorOp
-
+                
                 MouseArea {
                     id: mouseArea2
                     width: ignitionMap.width
@@ -305,7 +330,7 @@ Window {
                     }
                 }
             }
-
+            
             ValueBox {
                 id: engineTemp
                 x: 197
@@ -345,7 +370,7 @@ Window {
                 }
             }
         }
-
+        
         ValueBox {
             id: gearPos
             width: 159
@@ -361,7 +386,7 @@ Window {
             rectangleColor: "#00ff00"
             boxValueStyleColor: root.fontColorOp
         }
-
+        
         Item {
             id: raceData
             x: 631
@@ -526,7 +551,7 @@ Window {
                         duration: 500
                     }
                 }
-
+                
                 MouseArea {
                     id: mouseArea1
                     width: sessionTimer.width
@@ -620,7 +645,7 @@ Window {
                     duration: 0
                 }
             }
-
+            
             Text {
                 id: maxSpeed
                 width: 85
@@ -629,7 +654,7 @@ Window {
                 text: qsTr("0")
                 anchors.left: parent.right
                 anchors.top: parent.top
-
+                
                 font.pixelSize: 75
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -638,7 +663,7 @@ Window {
                 fontSizeMode: Text.Fit
                 minimumPixelSize: 12
                 font.family: "BN Elements"
-
+                
                 Text {
                     id: text1
                     width: 84
@@ -655,7 +680,7 @@ Window {
                 }
             }
         }
-
+        
         Slider {
             id: slider
             x: 617
@@ -684,7 +709,7 @@ Window {
                 root.fuelLevel = value
             }
         }
-
+        
         Slider {
             id: slider1
             x: 617
@@ -699,7 +724,7 @@ Window {
                 root.speed = value
             }
         }
-
+        
         Slider {
             id: slider3
             x: 617
@@ -711,7 +736,7 @@ Window {
             to: 4
             from: 0
             onValueChanged: {
-
+                
                 if (value == 0) {
                     root.gear = "N"
                 } else {
@@ -719,9 +744,9 @@ Window {
                 }
             }
         }
-
-
-
+        
+        
+        
         Slider {
             id: slider4
             x: 617
@@ -736,24 +761,7 @@ Window {
                 root.rpm = value
             }
         }
-
-        Slider {
-            id: slider5
-            x: 617
-            y: 159
-            width: 649
-            height: 36
-            visible: false
-            value: 0
-            stepSize: 1
-            to: 250
-            from: 0
-            onValueChanged: {
-                root.delay = value
-                console.log(value)
-            }
-        }
-
+        
         Rectangle {
             id: flasher
             y: 265
@@ -774,7 +782,7 @@ Window {
             width: 800
             height: gearDial.width
             rotation: 0
-
+            
             states: [
                 State {
                     name: "N"
@@ -811,7 +819,7 @@ Window {
                         duration: 1000
                         easing.type: Easing.InOutQuad
                     }
-
+                    
                     ColorAnimation {
                         target: gearDialCirc
                         easing.bezierCurve: [0.655,0.144,0.817,0.465,1,1]
@@ -819,9 +827,9 @@ Window {
                         //easing.type: Easing.InOutQuad
                     }
                 }
-
+                
             ]
-
+            
             Rectangle {
                 id: gearDialCirc
                 width: gearDial.width
@@ -830,7 +838,7 @@ Window {
                 radius: gearDial.width/2
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-
+                
                 MouseArea {
                     id: mouseArea
                     x: 0
@@ -869,7 +877,7 @@ Window {
                 anchors.rightMargin: 130
                 font.family: "BN Elements"
             }
-
+            
             Text {
                 id: gear1
                 color: root.fontColor
@@ -893,7 +901,7 @@ Window {
                 anchors.rightMargin: 200
                 anchors.topMargin: gearDial.height/2
             }
-
+            
             Text {
                 id: gear2
                 color: root.fontColor
@@ -917,7 +925,7 @@ Window {
                 anchors.rightMargin: 130
                 anchors.topMargin: gearDial.height/2
             }
-
+            
             Text {
                 id: gear3
                 color: root.fontColor
@@ -941,7 +949,7 @@ Window {
                 anchors.rightMargin: 130
                 anchors.topMargin: gearDial.height/2
             }
-
+            
             Text {
                 id: gear4
                 color: root.fontColor
@@ -967,10 +975,159 @@ Window {
             }
         }
     }
+
+    MouseArea {
+        id: launchButton
+        x: 350
+        width: 930
+        height: 110
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 105
+        anchors.rightMargin: 0
+        onPressed: {
+            if(root.speed<5){
+                stateGroup.state = "launchControl"
+            }
+        }
+    }
+
+    Item {
+        id: launchControl_group
+        x: 668
+        y: 345
+        width: 480
+        height: 445
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        anchors.rightMargin: 20
+        
+        ValueBox {
+            id: limitDisplay
+            height: 200
+            boxValueColor: root.fontColor
+            boxValueText: "5000"
+            labelText: "LAUNCH CONTROL"
+            rectangleColor: "#00ffffff"
+            visible: true
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 0
+            anchors.rightMargin: 15
+            boxValueStyleColor: root.fontColorOp
+
+        }
+
+        Rectangle {
+            id: twostepUp
+            x: 101
+            color: "#00000000"
+            radius: 10
+            border.color: root.fontBcolor
+            border.width: 3
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: limitDisplay.top
+            anchors.topMargin: 15
+            anchors.bottomMargin: 15
+            anchors.rightMargin: 15
+            anchors.leftMargin: 0
+
+            Text {
+                id: up
+                color: root.fontColor
+                text: qsTr("UP")
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.family: "BN Elements"
+                fontSizeMode: Text.Fit
+                anchors.fill: parent
+            }
+
+            MouseArea {
+                id: mouseArea3
+                width: 100
+                height: 100
+                anchors.fill: parent
+                onPressed: {
+                    root.rpmBar += root.step
+                }
+            }
+        }
+
+        Rectangle {
+            id: twostepDown
+            height: 93
+            color: "#00000000"
+            radius: 10
+            border.color: root.fontBcolor
+            border.width: 3
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: limitDisplay.bottom
+            anchors.leftMargin: 0
+            anchors.topMargin: 15
+            anchors.rightMargin: 15
+
+            Text {
+                id: down
+                color: root.fontColor
+                text: qsTr("DOWN")
+                font.pixelSize: 200
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.family: "BN Elements"
+                fontSizeMode: Text.Fit
+                anchors.fill: parent
+            }
+
+            MouseArea {
+                id: mouseArea4
+                width: 100
+                height: 100
+                anchors.fill: parent
+                onPressed: {
+                    root.rpmBar -= root.step
+                }
+            }
+        }
+    }
+    
+    StateGroup {
+        id: stateGroup
+        states: [
+            State {
+                name: "normal"
+                PropertyChanges {target: bikeData; visible: true}
+                PropertyChanges {target: raceData; visible: true}
+                PropertyChanges {target: launchControl_group;visible: false}
+                PropertyChanges {target: launchBar; visible: false}
+            },
+            State {
+                name: "messages"
+                PropertyChanges {target: bikeData; visible: false}
+                PropertyChanges {target: raceData; visible: false}
+                PropertyChanges {target: launchControl_group;visible: false}
+                PropertyChanges {target: launchBar; visible: false}
+            },
+            State {
+                name: "launchControl"
+                PropertyChanges {target: bikeData; visible: true}
+                PropertyChanges {target: raceData; visible: false}
+                PropertyChanges {target: launchControl_group; visible: true}
+                PropertyChanges {target: launchBar; visible: true}
+                }
+
+        ]
+    }
+
+
 }
 
-/*##^##
-Designer {
-    D{i:0}D{i:29;invisible:true}
-}
-##^##*/
+
+
+
