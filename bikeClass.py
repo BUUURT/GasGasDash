@@ -19,8 +19,14 @@ import threading
 
 ### to do ###
 # timeout for speed and rpm
-# [] define TODO list
-
+"""
+TODO
+[] tail light
+[] ignition map
+[] launch control logic
+[] arduino logic
+[] influx
+"""
 
 class Bike:
     def __init__(
@@ -39,7 +45,6 @@ class Bike:
         self.gpioPin_engineTemp = 17
         self.gpioPin_ignitionA = 16 #TODO build circuit for ignition control
         self.gpioPin_ignitionA = 20
-
 
         """_args enables sensor type, off by default"""
         # influx config

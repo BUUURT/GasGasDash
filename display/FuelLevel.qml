@@ -17,7 +17,7 @@ Item {
         height: 325
         color: "#00ffffff"
         radius: 10
-        border.color: "#000000"
+        border.color: "gray"
         border.width: 3
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 0
@@ -112,7 +112,7 @@ Item {
                 id: text1
                 y: 109
                 height: 137
-                color: fuelBorder.border.color
+                color: "#000000"
                 text: (fuelQty.height/fuelBorder.height*10).toFixed(0).toString()
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -120,6 +120,8 @@ Item {
                 font.pixelSize: 100
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                styleColor: "#ffffff"
+                style: Text.Outline
                 anchors.leftMargin: 0
                 anchors.rightMargin: 0
                 fontSizeMode: Text.Fit

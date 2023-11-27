@@ -12,29 +12,23 @@ import QtQuick.Controls.Universal 2.0
 //[x] rpm shift light
 //[x]low fuel visual alarm
 //[x] alarm on session time
+//[x] launch control
 //[] pit message two way logic
 //[] menu for pit
-//[] launch control
-// - exit button
-// - fix scale
-// - button animation
-// - disable with speed
-
-
 Window {
     id: root
     visible: true
-    color: "#cbcbcb"
+    color: "#ebebeb"
     //property alias rectangleWidth: rectangle.width
     width: 1280
     height: 800
     visibility: Window.Maximized
-    
+
     property color fontColor: "black"
     property color fontBcolor: "gray"
     property color fontColorOp: "black"
     property color blueHighlight: "#0050ff"
-    property color rpmColor: "#010073"
+    property color rpmColor: "#0200ca"
     property color rpmColorYellow: "#dfff00"
     property color rpmColorShift: "#ff3000"
     property bool darkMode: false
@@ -49,23 +43,27 @@ Window {
     property int rpm: 0
     //    property int delay: 250
     property int fuelLevel: 100
-    
+
     //launch control
-    property int rpmBar: 4000
+    property int twoStepBar: 4000 // in rpm
     property int step: 250
-    
+
     onDarkModeChanged: {
         if (root.darkMode == true) {
             //            image.source = "backgroundMask_dark.png"
             root.imageSource = "backgroundMask_dark.png"
             root.fontColor = "white"
             root.fontColorOp = "black"
+            root.color = "#131313"
+            rpmBar.color = "#B6CFE8"
+
         }
         if (root.darkMode == false) {
-            //            image.source = "backgroundMask_light.png"
             root.imageSource = "backgroundMask_light.png"
             root.fontColor = "black"
             root.fontColorOp = "black"
+            root.color = "#ececec"
+            rpmBar.color = "#0200ca"
         }
     }
     onEngTempChanged: {
@@ -75,7 +73,7 @@ Window {
         const lowerThreshold = thresholds[colorIndex - 1]
         const upperThreshold = thresholds[colorIndex]
         const colorRatio = (root.engTemp - lowerThreshold) / (upperThreshold - lowerThreshold)
-        
+
         let rgb = [0, 0, 0, 0]
         switch (colorIndex) {
         case 0:
@@ -110,7 +108,7 @@ Window {
         }
         engineTemp.rectangleColor = Qt.rgba(...rgb)
     }
-    
+
     onSpeedChanged: {
         if (root.speedPause == 0) {
             speed.speedTextText = root.speed.toString() //Update label
@@ -125,37 +123,54 @@ Window {
         } else {
             speed.speedTextText = maxSpeed.text
         }
+
+        //deactivate TC
+        if (root.speed > 5 && stateGroup.state !== "normal") {
+            stateGroup.state = "normal"
+        }
     }
 
     onGearChanged: {
         gearDial.state = root.gear
     }
-    
+
     onRpmChanged: {
-        rpmBar.width = root.rpm*1253/12000
-        if(root.rpm<10000){
-            rpmBar.state = "normal"}
-        if(root.rpm>10000){
-            rpmBar.state = "yellow"}
-        if(root.rpm>10750){
-            rpmBar.state = "shift"}
-    }
-    
-    onFuelLevelChanged: {
-        fuelBar.fuelQtyHeight = root.fuelLevel*325/100
-        if(root.fuelLevel==100){fuelBar.state = "full"}
-        else if(root.fuelLevel<10){fuelBar.state = "empty"}
-        else if(root.fuelLevel<20){fuelBar.state = "reserve"}
-        else if(root.fuelLevel<100){fuelBar.state = "mid"}
+        //rpmBar.width = root.rpm*1280/12300
+        if (root.rpm < 4000) {
+            rpmBar.width = 20 + root.rpm * 0.0345 //condense rpm bar
+        } else {
+            rpmBar.width = 158 + (root.rpm - 4000) * 137.125
+                    / 1000 //20+root.rpm*0.137125 //condense rpm bar
+        }
+
+        if (root.rpm < 10000) {
+            rpmBar.state = "normal"
+        } else if (root.rpm <= 10750) {
+            rpmBar.state = "yellow"
+        } else {
+            rpmBar.state = "shift"
+        }
     }
 
-    onRpmBarChanged: {
-        launchBar.x = root.rpmBar*1280/12250
-        limitDisplay.boxValueText = root.rpmBar
+    onFuelLevelChanged: {
+        fuelBar.fuelQtyHeight = root.fuelLevel * 325 / 100
+        if (root.fuelLevel == 100) {
+            fuelBar.state = "full"
+        } else if (root.fuelLevel < 10) {
+            fuelBar.state = "empty"
+        } else if (root.fuelLevel < 20) {
+            fuelBar.state = "reserve"
+        } else if (root.fuelLevel < 100) {
+            fuelBar.state = "mid"
+        }
     }
-    
-    
-    
+
+    onTwoStepBarChanged: {
+        launchBar.x = 158 + (root.twoStepBar - 4000) * 137.125 / 1000
+        limitDisplay.boxValueText = root.twoStepBar
+        text2.text = root.twoStepBar
+    }
+
     //TODO update sensor dict
     //    Timer {
     //        interval: 16
@@ -166,7 +181,7 @@ Window {
     //            root.rpm = parseInt(sensorDict['rpm'])
     //            speed.text = parseInt(sensorDict['speed'])
     // speed, rpm, air temp, gear
-    
+
     //        }
     //    }
     //TODO raceData dictionary retrevial
@@ -176,18 +191,20 @@ Window {
         repeat: true
         onTriggered: {
             sessionTimer.boxValueText = con.sessionTime()
-            if(sessionTimer.boxValueText[0]==="-"){overtimeFlasher.running=true}
-            else {
-                overtimeFlasher.running=false;
-                sessionTimer.rectangleColor = "#00000000";
+            if (sessionTimer.boxValueText[0] === "-") {
+                overtimeFlasher.running = true
+            } else {
+                overtimeFlasher.running = false
+                sessionTimer.rectangleColor = "#00000000"
             }
         }
     }
-    
+
     Rectangle {
         id: rpmBar
-        width: 0
-        color: root.rpmColor
+        width: 20
+        visible: true
+        color: "#3d3db8"
         border.width: 0
         anchors.left: parent.left
         anchors.top: parent.top
@@ -198,21 +215,40 @@ Window {
         states: [
             State {
                 name: "normal"
-                PropertyChanges {target: shiftFlasherYellow; running: false}
-                PropertyChanges {target: shiftFlasherRed; running: false}
-                PropertyChanges {target: flasher; opacity: 0}
+                PropertyChanges {
+                    target: shiftFlasherYellow
+                    running: false
+                }
+                PropertyChanges {
+                    target: shiftFlasherRed
+                    running: false
+                }
+                PropertyChanges {
+                    target: flasher
+                    opacity: 0
+                }
             },
             State {
                 name: "yellow"
-                PropertyChanges {target: shiftFlasherYellow; running: true}
-                PropertyChanges {target: shiftFlasherRed; running: false}
-                
-                
+                PropertyChanges {
+                    target: shiftFlasherYellow
+                    running: true
+                }
+                PropertyChanges {
+                    target: shiftFlasherRed
+                    running: false
+                }
             },
             State {
                 name: "shift"
-                PropertyChanges {target: shiftFlasherYellow; running: false}
-                PropertyChanges {target: shiftFlasherRed; running: true}
+                PropertyChanges {
+                    target: shiftFlasherYellow
+                    running: false
+                }
+                PropertyChanges {
+                    target: shiftFlasherRed
+                    running: true
+                }
             }
         ]
         SequentialAnimation {
@@ -223,14 +259,13 @@ Window {
                 target: flasher
                 property: "color"
                 to: "#ff0000"
-                duration:0
+                duration: 0
             }
             PropertyAnimation {
                 target: flasher
                 property: "opacity"
                 to: 1
                 duration: 100
-                
             }
             PropertyAnimation {
                 target: flasher
@@ -247,14 +282,13 @@ Window {
                 target: flasher
                 property: "color"
                 to: "#ffff00"
-                duration:0
+                duration: 0
             }
             PropertyAnimation {
                 target: flasher
                 property: "opacity"
                 to: 1
                 duration: 100
-                
             }
             PropertyAnimation {
                 target: flasher
@@ -263,20 +297,20 @@ Window {
                 duration: 100
             }
         }
-
-        Rectangle {
-            id: launchBar
-            x: 348
-            y: -321
-            width: 10
-            height: 200
-            color: "#ff0000"
-            anchors.top: parent.top
-            anchors.topMargin: 0
-        }
-        
     }
-    
+
+    Rectangle {
+        id: launchBar
+        x: 153
+        y: 80
+        width: 10
+        height: 300
+        color: "#ff0000"
+        anchors.top: parent.top
+        anchors.topMargin: 100
+        visible: false
+    }
+
     Image {
         id: image
         visible: true
@@ -293,7 +327,7 @@ Window {
         anchors.bottomMargin: 0
         anchors.topMargin: 0
         fillMode: Image.Stretch
-        
+
         Item {
             id: bikeData
             x: 27
@@ -316,7 +350,7 @@ Window {
                 labelText: "IGN MAP"
                 rectangleColor: "#00ffffff"
                 boxValueStyleColor: root.fontColorOp
-                
+
                 MouseArea {
                     id: mouseArea2
                     width: ignitionMap.width
@@ -330,7 +364,7 @@ Window {
                     }
                 }
             }
-            
+
             ValueBox {
                 id: engineTemp
                 x: 197
@@ -370,7 +404,7 @@ Window {
                 }
             }
         }
-        
+
         ValueBox {
             id: gearPos
             width: 159
@@ -386,7 +420,7 @@ Window {
             rectangleColor: "#00ff00"
             boxValueStyleColor: root.fontColorOp
         }
-        
+
         Item {
             id: raceData
             x: 631
@@ -539,19 +573,19 @@ Window {
                     PropertyAnimation {
                         target: sessionTimer
                         property: "rectangleColor"
-                        easing.bezierCurve: [0.2,0.2,0.8,0.8,1,1]
+                        easing.bezierCurve: [0.2, 0.2, 0.8, 0.8, 1, 1]
                         to: "#aaffff00"
                         duration: 500
                     }
                     PropertyAnimation {
                         target: sessionTimer
                         property: "rectangleColor"
-                        easing.bezierCurve: [0.2,0.2,0.8,0.8,1,1]
-                        to:"#00000000"
+                        easing.bezierCurve: [0.2, 0.2, 0.8, 0.8, 1, 1]
+                        to: "#00000000"
                         duration: 500
                     }
                 }
-                
+
                 MouseArea {
                     id: mouseArea1
                     width: sessionTimer.width
@@ -577,6 +611,7 @@ Window {
             x: 184
             width: 1100
             height: 100
+            visible: false
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.rightMargin: 0
@@ -645,7 +680,7 @@ Window {
                     duration: 0
                 }
             }
-            
+
             Text {
                 id: maxSpeed
                 width: 85
@@ -654,7 +689,7 @@ Window {
                 text: qsTr("0")
                 anchors.left: parent.right
                 anchors.top: parent.top
-                
+
                 font.pixelSize: 75
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -663,7 +698,7 @@ Window {
                 fontSizeMode: Text.Fit
                 minimumPixelSize: 12
                 font.family: "BN Elements"
-                
+
                 Text {
                     id: text1
                     width: 84
@@ -680,7 +715,7 @@ Window {
                 }
             }
         }
-        
+
         Slider {
             id: slider
             x: 617
@@ -709,7 +744,7 @@ Window {
                 root.fuelLevel = value
             }
         }
-        
+
         Slider {
             id: slider1
             x: 617
@@ -724,11 +759,11 @@ Window {
                 root.speed = value
             }
         }
-        
+
         Slider {
             id: slider3
-            x: 617
-            y: 222
+            x: 623
+            y: 55
             width: 649
             height: 36
             value: 0
@@ -736,7 +771,7 @@ Window {
             to: 4
             from: 0
             onValueChanged: {
-                
+
                 if (value == 0) {
                     root.gear = "N"
                 } else {
@@ -744,13 +779,11 @@ Window {
                 }
             }
         }
-        
-        
-        
+
         Slider {
             id: slider4
-            x: 617
-            y: 193
+            x: 623
+            y: 20
             width: 649
             height: 36
             value: 0
@@ -761,7 +794,7 @@ Window {
                 root.rpm = value
             }
         }
-        
+
         Rectangle {
             id: flasher
             y: 265
@@ -782,32 +815,62 @@ Window {
             width: 800
             height: gearDial.width
             rotation: 0
-            
+
             states: [
                 State {
                     name: "N"
-                    PropertyChanges {target: gearDial; rotation: 0}
-                    PropertyChanges {target: gearDialCirc; color: "#00ff47"}
+                    PropertyChanges {
+                        target: gearDial
+                        rotation: 0
+                    }
+                    PropertyChanges {
+                        target: gearDialCirc
+                        color: "#00ff47"
+                    }
                 },
                 State {
                     name: "1"
-                    PropertyChanges {target: gearDial; rotation: 72}
-                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                    PropertyChanges {
+                        target: gearDial
+                        rotation: 72
+                    }
+                    PropertyChanges {
+                        target: gearDialCirc
+                        color: root.fontBcolor
+                    }
                 },
                 State {
                     name: "2"
-                    PropertyChanges {target: gearDial; rotation: 144}
-                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                    PropertyChanges {
+                        target: gearDial
+                        rotation: 144
+                    }
+                    PropertyChanges {
+                        target: gearDialCirc
+                        color: root.fontBcolor
+                    }
                 },
                 State {
                     name: "3"
-                    PropertyChanges {target: gearDial; rotation: 216}
-                    PropertyChanges {target: gearDialCirc; color: root.fontBcolor}
+                    PropertyChanges {
+                        target: gearDial
+                        rotation: 216
+                    }
+                    PropertyChanges {
+                        target: gearDialCirc
+                        color: root.fontBcolor
+                    }
                 },
                 State {
                     name: "4"
-                    PropertyChanges {target: gearDial; rotation: 288}
-                    PropertyChanges {target: gearDialCirc; color: root.blueHighlight}
+                    PropertyChanges {
+                        target: gearDial
+                        rotation: 288
+                    }
+                    PropertyChanges {
+                        target: gearDialCirc
+                        color: root.blueHighlight
+                    }
                 }
             ]
             transitions: [
@@ -819,26 +882,25 @@ Window {
                         duration: 1000
                         easing.type: Easing.InOutQuad
                     }
-                    
+
                     ColorAnimation {
                         target: gearDialCirc
-                        easing.bezierCurve: [0.655,0.144,0.817,0.465,1,1]
+                        easing.bezierCurve: [0.655, 0.144, 0.817, 0.465, 1, 1]
                         duration: 300
                         //easing.type: Easing.InOutQuad
                     }
                 }
-                
             ]
-            
+
             Rectangle {
                 id: gearDialCirc
                 width: gearDial.width
                 height: gearDial.height
-                color: "#6d6edf"
-                radius: gearDial.width/2
+                color: "#00ff04"
+                radius: gearDial.width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                
+
                 MouseArea {
                     id: mouseArea
                     x: 0
@@ -870,14 +932,14 @@ Window {
                 font.pixelSize: 200
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignBottom
-                anchors.leftMargin: gearDial.width/2
-                anchors.topMargin: gearDial.height/2
+                anchors.leftMargin: gearDial.width / 2
+                anchors.topMargin: gearDial.height / 2
                 transformOrigin: Item.TopLeft
                 anchors.bottomMargin: 40
                 anchors.rightMargin: 130
                 font.family: "BN Elements"
             }
-            
+
             Text {
                 id: gear1
                 color: root.fontColor
@@ -895,13 +957,13 @@ Window {
                 verticalAlignment: Text.AlignBottom
                 rotation: -72
                 font.family: "BN Elements"
-                anchors.leftMargin: gearDial.width/2
+                anchors.leftMargin: gearDial.width / 2
                 transformOrigin: Item.TopLeft
                 anchors.bottomMargin: 40
                 anchors.rightMargin: 200
-                anchors.topMargin: gearDial.height/2
+                anchors.topMargin: gearDial.height / 2
             }
-            
+
             Text {
                 id: gear2
                 color: root.fontColor
@@ -919,13 +981,13 @@ Window {
                 verticalAlignment: Text.AlignBottom
                 rotation: -144
                 font.family: "BN Elements"
-                anchors.leftMargin: gearDial.width/2
+                anchors.leftMargin: gearDial.width / 2
                 transformOrigin: Item.TopLeft
                 anchors.bottomMargin: 40
                 anchors.rightMargin: 130
-                anchors.topMargin: gearDial.height/2
+                anchors.topMargin: gearDial.height / 2
             }
-            
+
             Text {
                 id: gear3
                 color: root.fontColor
@@ -943,13 +1005,13 @@ Window {
                 verticalAlignment: Text.AlignBottom
                 rotation: -216
                 font.family: "BN Elements"
-                anchors.leftMargin: gearDial.width/2
+                anchors.leftMargin: gearDial.width / 2
                 transformOrigin: Item.TopLeft
                 anchors.bottomMargin: 40
                 anchors.rightMargin: 130
-                anchors.topMargin: gearDial.height/2
+                anchors.topMargin: gearDial.height / 2
             }
-            
+
             Text {
                 id: gear4
                 color: root.fontColor
@@ -967,11 +1029,11 @@ Window {
                 verticalAlignment: Text.AlignBottom
                 rotation: -288
                 font.family: "BN Elements"
-                anchors.leftMargin: gearDial.width/2
+                anchors.leftMargin: gearDial.width / 2
                 transformOrigin: Item.TopLeft
                 anchors.bottomMargin: 40
                 anchors.rightMargin: 130
-                anchors.topMargin: gearDial.height/2
+                anchors.topMargin: gearDial.height / 2
             }
         }
     }
@@ -986,7 +1048,7 @@ Window {
         anchors.topMargin: 105
         anchors.rightMargin: 0
         onPressed: {
-            if(root.speed<5){
+            if (root.speed < 5) {
                 stateGroup.state = "launchControl"
             }
         }
@@ -998,16 +1060,17 @@ Window {
         y: 345
         width: 480
         height: 445
+        visible: false
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
         anchors.rightMargin: 20
-        
+
         ValueBox {
             id: limitDisplay
             height: 200
             boxValueColor: root.fontColor
-            boxValueText: "5000"
+            boxValueText: "4000"
             labelText: "LAUNCH CONTROL"
             rectangleColor: "#00ffffff"
             visible: true
@@ -1018,6 +1081,16 @@ Window {
             anchors.rightMargin: 15
             boxValueStyleColor: root.fontColorOp
 
+            MouseArea {
+                id: mouseArea5
+                width: 100
+                height: 100
+                anchors.fill: parent
+                onPressAndHold: {
+                    interval: 1000
+                    stateGroup.state = "normal"
+                }
+            }
         }
 
         Rectangle {
@@ -1035,6 +1108,40 @@ Window {
             anchors.bottomMargin: 15
             anchors.rightMargin: 15
             anchors.leftMargin: 0
+            SequentialAnimation {
+                id: upClick
+                running: false
+                PropertyAnimation {
+                    target: twostepUp
+                    property: "scale"
+                    to: .95
+                    duration: 15
+                }
+                PropertyAnimation {
+                    target: twostepUp
+                    property: "scale"
+                    to: 1.05
+                    duration: 100
+                }
+                PropertyAnimation {
+                    target: twostepUp
+                    property: "color"
+                    to: root.fontBcolor
+                    duration: 100
+                }
+                PropertyAnimation {
+                    target: twostepUp
+                    property: "scale"
+                    to: 1
+                    duration: 20
+                }
+                PropertyAnimation {
+                    target: twostepUp
+                    property: "color"
+                    to: "#00ffffff"
+                    duration: 20
+                }
+            }
 
             Text {
                 id: up
@@ -1054,7 +1161,8 @@ Window {
                 height: 100
                 anchors.fill: parent
                 onPressed: {
-                    root.rpmBar += root.step
+                    root.twoStepBar += root.step
+                    upClick.running = true
                 }
             }
         }
@@ -1072,6 +1180,40 @@ Window {
             anchors.leftMargin: 0
             anchors.topMargin: 15
             anchors.rightMargin: 15
+            SequentialAnimation {
+                id: downClick
+                running: false
+                PropertyAnimation {
+                    target: twostepDown
+                    property: "scale"
+                    to: .95
+                    duration: 15
+                }
+                PropertyAnimation {
+                    target: twostepDown
+                    property: "scale"
+                    to: 1.05
+                    duration: 100
+                }
+                PropertyAnimation {
+                    target: twostepDown
+                    property: "color"
+                    to: root.fontBcolor
+                    duration: 100
+                }
+                PropertyAnimation {
+                    target: twostepDown
+                    property: "scale"
+                    to: 1
+                    duration: 20
+                }
+                PropertyAnimation {
+                    target: twostepDown
+                    property: "color"
+                    to: "#00ffffff"
+                    duration: 20
+                }
+            }
 
             Text {
                 id: down
@@ -1091,43 +1233,73 @@ Window {
                 height: 100
                 anchors.fill: parent
                 onPressed: {
-                    root.rpmBar -= root.step
+                    root.twoStepBar -= root.step
+                    downClick.running = true
                 }
             }
         }
     }
-    
+
     StateGroup {
         id: stateGroup
         states: [
             State {
                 name: "normal"
-                PropertyChanges {target: bikeData; visible: true}
-                PropertyChanges {target: raceData; visible: true}
-                PropertyChanges {target: launchControl_group;visible: false}
-                PropertyChanges {target: launchBar; visible: false}
+                PropertyChanges {
+                    target: bikeData
+                    visible: true
+                }
+                PropertyChanges {
+                    target: raceData
+                    visible: true
+                }
+                PropertyChanges {
+                    target: launchControl_group
+                    visible: false
+                }
+                PropertyChanges {
+                    target: launchBar
+                    visible: false
+                }
             },
             State {
                 name: "messages"
-                PropertyChanges {target: bikeData; visible: false}
-                PropertyChanges {target: raceData; visible: false}
-                PropertyChanges {target: launchControl_group;visible: false}
-                PropertyChanges {target: launchBar; visible: false}
+                PropertyChanges {
+                    target: bikeData
+                    visible: false
+                }
+                PropertyChanges {
+                    target: raceData
+                    visible: false
+                }
+                PropertyChanges {
+                    target: launchControl_group
+                    visible: false
+                }
+                PropertyChanges {
+                    target: launchBar
+                    visible: false
+                }
             },
             State {
                 name: "launchControl"
-                PropertyChanges {target: bikeData; visible: true}
-                PropertyChanges {target: raceData; visible: false}
-                PropertyChanges {target: launchControl_group; visible: true}
-                PropertyChanges {target: launchBar; visible: true}
+                PropertyChanges {
+                    target: bikeData
+                    visible: true
                 }
-
+                PropertyChanges {
+                    target: raceData
+                    visible: false
+                }
+                PropertyChanges {
+                    target: launchControl_group
+                    visible: true
+                }
+                PropertyChanges {
+                    target: launchBar
+                    visible: true
+                }
+            }
         ]
     }
-
-
 }
-
-
-
-

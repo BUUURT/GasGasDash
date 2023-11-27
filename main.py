@@ -5,6 +5,13 @@ from os.path import abspath, dirname, join
 import random
 import ast
 
+"""TODO
+[] tail light
+[] ignition map
+[] launch control logic
+[] arduino logic
+[] pit message
+"""
 
 # import requests
 
