@@ -168,7 +168,6 @@ Window {
     onTwoStepBarChanged: {
         launchBar.x = 158 + (root.twoStepBar - 4000) * 137.125 / 1000
         limitDisplay.boxValueText = root.twoStepBar
-        text2.text = root.twoStepBar
     }
 
     //TODO update sensor dict
