@@ -1,8 +1,8 @@
-import QtQuick 2.2
-import QtQuick.Window 2.1
-import QtQuick.Layouts 1.0
-import QtQuick.Controls 2.4
-import QtQuick.Controls.Universal 2.0
+import QtQuick
+import QtQuick.Window
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Universal
 
 //TODO
 //[x]ignition mapping send to bike signal
