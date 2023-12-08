@@ -19,10 +19,11 @@ Window {
     id: root
     visible: true
     color: "#ebebeb"
+    visibility: Window.FullScreen
     //property alias rectangleWidth: rectangle.width
     width: 1280
     height: 800
-    visibility: Window.Maximized
+
 
     property color fontColor: "black"
     property color fontBcolor: "gray"
