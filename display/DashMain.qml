@@ -628,7 +628,7 @@ Window {
             anchors.leftMargin: 130
             anchors.bottomMargin: 260
             speedLabelColor: root.fontBcolor
-            speedTextText: "28"
+            speedTextText: "0"
             visible: true
             SequentialAnimation {
                 id: maxSpeedFlash
