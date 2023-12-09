@@ -14,7 +14,7 @@ Item {
         height: item1.height
         text: qsTr("128")
         anchors.verticalCenter: parent.verticalCenter
-        font.pixelSize: 275
+        font.pixelSize: 300
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         anchors.horizontalCenter: parent.horizontalCenter
@@ -28,7 +28,7 @@ Item {
             font.pixelSize: 30
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            anchors.topMargin: -50
+            anchors.topMargin: -40
             anchors.horizontalCenter: parent.horizontalCenter
             font.family: "BN Elements"
         }

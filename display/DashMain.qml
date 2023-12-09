@@ -489,7 +489,7 @@ Window {
                     id: resetBacklight
                     width: 0
                     height: 200
-                    color: root.fontBcolor
+                    color: "#9cecff00"//root.fontBcolor
                     radius: 10
                     border.width: 0
                     anchors.verticalCenter: parent.verticalCenter
@@ -595,7 +595,7 @@ Window {
                     anchors.topMargin: 0
                     anchors.horizontalCenter: parent.horizontalCenter
                     onPressAndHold: {
-                        interval: 2000
+                        interval: 1800
                         con.sessionTime_Reset()
                         resetFlash.running = true
                     }
@@ -621,11 +621,12 @@ Window {
             id: speed
             x: 132
             y: 302
+            width: 525
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             speedTextColor: root.fontColor
             anchors.leftMargin: 130
-            anchors.bottomMargin: 250
+            anchors.bottomMargin: 260
             speedLabelColor: root.fontBcolor
             speedTextText: "28"
             visible: true
@@ -690,11 +691,11 @@ Window {
                 anchors.left: parent.right
                 anchors.top: parent.top
 
-                font.pixelSize: 75
+                font.pixelSize: 120
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                anchors.leftMargin: -40
-                anchors.topMargin: 20
+                anchors.leftMargin: -20
+                anchors.topMargin: 10
                 fontSizeMode: Text.Fit
                 minimumPixelSize: 12
                 font.family: "BN Elements"
@@ -713,85 +714,6 @@ Window {
                     anchors.topMargin: -10
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
-            }
-        }
-
-        Slider {
-            id: slider
-            x: 617
-            y: 299
-            width: 649
-            height: 36
-            stepSize: 1
-            to: 300
-            from: 1
-            value: 0.5
-            onValueChanged: {
-                root.engTemp = value
-            }
-        }
-        Slider {
-            id: slider2
-            x: 617
-            y: 275
-            width: 649
-            height: 36
-            stepSize: 1
-            to: 100
-            from: 0
-            value: 0
-            onValueChanged: {
-                root.fuelLevel = value
-            }
-        }
-
-        Slider {
-            id: slider1
-            x: 617
-            y: 250
-            width: 649
-            height: 36
-            value: 0
-            stepSize: 1
-            to: 100
-            from: 0
-            onValueChanged: {
-                root.speed = value
-            }
-        }
-
-        Slider {
-            id: slider3
-            x: 623
-            y: 55
-            width: 649
-            height: 36
-            value: 0
-            stepSize: 1
-            to: 4
-            from: 0
-            onValueChanged: {
-
-                if (value == 0) {
-                    root.gear = "N"
-                } else {
-                    root.gear = value.toString()
-                }
-            }
-        }
-
-        Slider {
-            id: slider4
-            x: 623
-            y: 20
-            width: 649
-            height: 36
-            value: 0
-            stepSize: 1
-            to: 12500
-            from: 0
-            onValueChanged: {
-                root.rpm = value
             }
         }
 
