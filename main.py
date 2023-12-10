@@ -38,7 +38,10 @@ class Bridge(QObject):
     # @Slot(str, result=str)
     # def testSlot(self, i):
     #     print(i)
-
+    @Slot()
+    def rpm(self):
+        return bike.rpm
+    
     @Slot(result=str)
     def sensorRefresh(self):
         return bike.call_sensorDict()
