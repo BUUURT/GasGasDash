@@ -168,6 +168,7 @@ class Bike:
         while True:
             #lap = self.lap
             #imuDict = self.call_imu()
+            self.rpmCalc(27)
 
             self.sensorDict = {
                 "speed": self.speed,

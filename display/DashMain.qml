@@ -151,6 +151,7 @@ Window {
         } else {
             rpmBar.state = "shift"
         }
+        text2.text=root.rpm.toString()
     }
 
     onFuelLevelChanged: {
@@ -957,6 +958,14 @@ Window {
                 anchors.rightMargin: 130
                 anchors.topMargin: gearDial.height / 2
             }
+        }
+
+        Text {
+            id: text2
+            x: 548
+            y: 38
+            text: qsTr("Text")
+            font.pixelSize: 50
         }
     }
 
