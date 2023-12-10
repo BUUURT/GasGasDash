@@ -174,13 +174,13 @@ class Bike:
                 "rpm": self.rpm,
                 # brake :
                 "engTemp": self.call_engTemp(),
-                "airTemp": imuDict["airTemp"],
-                "rotationX": imuDict["rotX"],
-                "rotationY": imuDict["rotX"],
-                "rotationZ": imuDict["rotZ"],
-                "accelX": imuDict["accelX"],
-                "accelY": imuDict["accelY"],
-                "accelZ": imuDict["accelZ"],
+                #"airTemp": imuDict["airTemp"],
+                #"rotationX": imuDict["rotX"],
+                #"rotationY": imuDict["rotX"],
+                #"rotationZ": imuDict["rotZ"],
+                #"accelX": imuDict["accelX"],
+                #"accelY": imuDict["accelY"],
+                #"accelZ": imuDict["accelZ"],
             }
 
             # try:
