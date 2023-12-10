@@ -962,10 +962,12 @@ Window {
 
         Text {
             id: text2
-            x: 548
-            y: 38
             text: qsTr("Text")
+            anchors.left: parent.left
+            anchors.top: parent.top
             font.pixelSize: 50
+            anchors.leftMargin: 548
+            anchors.topMargin: 38
         }
     }
 

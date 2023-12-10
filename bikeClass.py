@@ -165,16 +165,16 @@ class Bike:
         # return self.rpm
 
     def call_sensorDict(self):
-        while True:
+        #while True:
             #lap = self.lap
             #imuDict = self.call_imu()
-            self.rpmCalc(27)
+        self.rpmCalc(27)
 
-            self.sensorDict = {
-                "speed": self.speed,
-                "rpm": self.rpm,
+        self.sensorDict = {
+            #"speed": self.speed,
+            "rpm": self.rpm
                 # brake :
-                "engTemp": self.call_engTemp(),
+            #"engTemp": self.call_engTemp(),
                 #"airTemp": imuDict["airTemp"],
                 #"rotationX": imuDict["rotX"],
                 #"rotationY": imuDict["rotX"],
@@ -191,7 +191,7 @@ class Bike:
             #
             # except:
             #     print('influx error')
-            time.sleep(0.016)
+            #time.sleep(0.016)
     def ignitionMapUpdate(self,ignitionMap):
         self.ignitionMap = ignitionMap
         #TODO define logic for driving circuit
@@ -213,7 +213,11 @@ class Bike:
 
 
 if __name__ == "__main__":
-    i = Bike()
+    i = Bike(_rpm=True)
+    while True:
+        if i.rpm>0:
+            print(i.rpm)
+        time.sleep(0.01)
     # while True:
     # print(i.EngineTemp)
     # time.sleep(0.5)
