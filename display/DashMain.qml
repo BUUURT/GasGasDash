@@ -174,7 +174,7 @@ Window {
 
     //TODO update sensor dict
         Timer {
-            interval: 16
+            interval: 100
             running: true
             repeat: true
             onTriggered: {
