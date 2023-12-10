@@ -172,18 +172,18 @@ Window {
     }
 
     //TODO update sensor dict
-    //    Timer {
-    //        interval: 16
-    //        running: true
-    //        repeat: true
-    //        onTriggered: {
-    //            var sensorDict = con.sensorRefresh()
-    //            root.rpm = parseInt(sensorDict['rpm'])
-    //            speed.text = parseInt(sensorDict['speed'])
-    // speed, rpm, air temp, gear
+        Timer {
+            interval: 16
+            running: true
+            repeat: true
+            onTriggered: {
+                var sensorDict = con.sensorRefresh()
+                root.rpm = parseInt(sensorDict['rpm'])
+//                speed.text = parseInt(sensorDict['speed'])
+//     speed, rpm, air temp, gear
 
-    //        }
-    //    }
+            }
+        }
     //TODO raceData dictionary retrevial
     Timer {
         interval: 500

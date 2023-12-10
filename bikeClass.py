@@ -166,8 +166,8 @@ class Bike:
 
     def call_sensorDict(self):
         while True:
-            lap = self.lap
-            imuDict = self.call_imu()
+            #lap = self.lap
+            #imuDict = self.call_imu()
 
             self.sensorDict = {
                 "speed": self.speed,
