@@ -6,7 +6,7 @@ import time, math
 
 rpm = 0
 elapse = 0
-sensor = 17
+sensor = 27
 pulse = 0
 start_timer = time.monotonic()
 

@@ -24,7 +24,7 @@ from PyQt6.QtQuick import QQuickView
 
 from bikeClass import Bike
 
-bike = Bike()
+bike = Bike(_rpm=True)
 
 
 class Bridge(QObject):
