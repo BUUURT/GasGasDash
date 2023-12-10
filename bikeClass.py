@@ -6,13 +6,13 @@ import json
 import subprocess
 import threading
 
-# import board
-# import busio
-# import RPi.GPIO as GPIO
+import board
+import busio
+import RPi.GPIO as GPIO
 # import adafruit_bno055
 # import adafruit_gps
 # import adafruit_max31855
-# import digitalio
+import digitalio
 
 # from influxdb_client import InfluxDBClient, Point, WritePrecision
 # from influxdb_client.client.write_api import SYNCHRONOUS
