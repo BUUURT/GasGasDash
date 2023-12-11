@@ -179,7 +179,8 @@ Window {
             repeat: true
             onTriggered: {
 //                var sensorDict = con.sensorRefresh()
-                root.rpm = con.rpm()
+                var r = root.rpm()
+                root.rpm = r.toString()
 //                root.rpm = parseInt(sensorDict['rpm'])
 //                speed.text = parseInt(sensorDict['speed'])
 //     speed, rpm, air temp, gear

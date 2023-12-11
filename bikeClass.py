@@ -89,7 +89,7 @@ class Bike:
         if _rpm == True:
             self.GPIO.setup(self.gpioPin_rpm, GPIO.IN, GPIO.PUD_DOWN)
             self.GPIO.add_event_detect(
-                self.gpioPin_rpm, GPIO.RISING, callback=self.rpmCalc, bouncetime=2
+                self.gpioPin_rpm, GPIO.RISING, callback=self.rpmCalc, bouncetime=20
             )
 
         if _imu == True:  # IMU
